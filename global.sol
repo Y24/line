@@ -57,13 +57,13 @@ contract global {
 
     }
     function initNode(uint nodeNum) internal{
-        node =new node[](nodeNum);
+        nodes.length=nodeNum;
         for (uint i = 0; i < nodeNum; i++)
             nodes[i] = new node(i);
     }
 
     function initLine(uint lineNum, uint[] allLines) internal{
-        lines = new line[](lineNum);
+        lines.length=lineNum;
         for (uint i = 0; i < lineNum; i++)
             lines[i] = new line(allLines[3 * i], allLines[3 * i + 1], allLines[3 * i + 2]);
         initNearby();
