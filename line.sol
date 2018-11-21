@@ -25,6 +25,6 @@ contract line {
     }
 
     function equals(uint first, uint second) public view returns (bool){
-        return (firstId == first && secondId == second) || (firstId == second && secondId == firstId);
+        return (firstId == first && secondId == second) || (firstId == second && secondId == first);
     }
 }
