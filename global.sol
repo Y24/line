@@ -15,12 +15,14 @@ contract global {
         return result;
     }
     function calculatesPath(uint fromId, uint toId) public {
+        initOtherNode(toId);
         updatesPath(toId);
         result=nodes[fromId].getCurrentsPath(toId);
     }
     function updatesPath(uint idToUpdate) internal{
         bool re=false;
         do {
+            re=false;
             for(uint i=0;i<nodes.length;i++)
                 if(i!=idToUpdate&&!nodes[idToUpdate].isNearby(i)){
                     uint tmp=nodes[i].getCurrentsPath(idToUpdate);
@@ -55,13 +57,13 @@ contract global {
 
     }
     function initNode(uint nodeNum) internal{
-        nodes.length = nodeNum;
+        node =new node[](nodeNum);
         for (uint i = 0; i < nodeNum; i++)
             nodes[i] = new node(i);
     }
 
     function initLine(uint lineNum, uint[] allLines) internal{
-        lines.length = lineNum;
+        lines = new line[](lineNum);
         for (uint i = 0; i < lineNum; i++)
             lines[i] = new line(allLines[3 * i], allLines[3 * i + 1], allLines[3 * i + 2]);
         initNearby();
