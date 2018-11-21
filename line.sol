@@ -24,7 +24,7 @@ contract line {
         charge = newCharge;
     }
 
-    function equals(uint first, uint second) public returns (bool){
+    function equals(uint first, uint second) public view returns (bool){
         return (firstId == first && secondId == second) || (firstId == second && secondId == firstId);
     }
 }
