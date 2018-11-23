@@ -34,7 +34,7 @@ contract global {
                 }
         } while(re);
     }
-    function judge(uint idToJudge,uint objectId) public view returns (uint){
+    function judge(uint idToJudge,uint objectId) internal view returns (uint){
         uint[] memory nearbyNodes = nodes[idToJudge].getNearby();
         uint comparedResult=nodes[idToJudge].getCurrentsPath();
         uint startFlag=0;
