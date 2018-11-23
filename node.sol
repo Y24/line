@@ -2,14 +2,14 @@ pragma solidity ^0.4.0;
 contract node {
     uint id;
     uint[] nearbyNode;
-    mapping(uint => uint) sPath;
-    constructor (uint assignId) public{
+    uint sPath;
+    constructor (uint assignId) public payable{
         id=assignId;
         nearbyNode.length=0;
+        sPath=0;
     }
-    function addNearby(uint idToAdd,uint charge) public {
+    function addNearby(uint idToAdd) public {
         nearbyNode[nearbyNode.length++]=idToAdd;
-        sPath[idToAdd]=charge;
     }
     function isNearby(uint testId) public view returns (bool) {
         for (uint i = 0; i < nearbyNode.length; i++)
@@ -17,16 +17,19 @@ contract node {
         return false;
     }
     function getNearby() public view returns (uint[]){
-        return nearbyNode;
+        uint[] memory near=new uint[](nearbyNode.length);
+        for(uint i=0;i<near.length;i++)
+            near[i]=nearbyNode[i];
+        return near;
     }
-    function getCurrentsPath(uint testId) public constant returns (uint){
-        return sPath[testId];
+    function getCurrentsPath() public constant returns (uint){
+        return sPath;
     }
 
-    function setCurrentsPath(uint testId, uint newCharge) public {
-        sPath[testId] = newCharge;
+    function setCurrentsPath(uint newCharge) public {
+        sPath = newCharge;
     }
-    function PreDecided(uint testId) public view returns (bool){
-        return sPath[testId]!=0;
+    function PreDecided() public view returns (bool){
+        return sPath!=0;
     }
 }

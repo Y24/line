@@ -7,7 +7,7 @@ contract global {
     uint result;
     node[] nodes;
     line[] lines;
-    constructor (uint nodeNum, uint lineNum, uint[] allLines) public{
+    constructor (uint nodeNum, uint lineNum, uint[] allLines) public payable{
         initNode(nodeNum);
         initLine(lineNum, allLines);
     }
@@ -17,44 +17,50 @@ contract global {
     function calculatesPath(uint fromId, uint toId) public {
         initOtherNode(toId);
         updatesPath(toId);
-        result=nodes[fromId].getCurrentsPath(toId);
+        result=nodes[fromId].getCurrentsPath();
+        initNode(nodes.length);
+        initNearby();
     }
     function updatesPath(uint idToUpdate) internal{
         bool re=false;
         do {
             re=false;
             for(uint i=0;i<nodes.length;i++)
-                if(i!=idToUpdate&&!nodes[idToUpdate].isNearby(i)){
-                    uint tmp=nodes[i].getCurrentsPath(idToUpdate);
-                    nodes[i].setCurrentsPath(idToUpdate,judge(i,idToUpdate));
-                    if(tmp!=nodes[i].getCurrentsPath(idToUpdate))
+                if(i!=idToUpdate){
+                    uint tmp=nodes[i].getCurrentsPath();
+                    nodes[i].setCurrentsPath(judge(i,idToUpdate));
+                    if(tmp!=nodes[i].getCurrentsPath()||nodes[i].getCurrentsPath()==0)
                         re=true;
                 }
         } while(re);
     }
-    function judge(uint idToJudge,uint objectId) internal view returns (uint){
+    function judge(uint idToJudge,uint objectId) public view returns (uint){
         uint[] memory nearbyNodes = nodes[idToJudge].getNearby();
-        uint comparedResult=0;
-        uint flag=0;
-        for(uint i=0;i<nearbyNodes.length;i++){
-            if(nodes[nearbyNodes[i]].PreDecided(objectId)){
-                comparedResult=nodes[nearbyNodes[i]].getCurrentsPath(objectId)+nodes[idToJudge].getCurrentsPath(nearbyNodes[j]);
-                flag=i;
-                break;
+        uint comparedResult=nodes[idToJudge].getCurrentsPath();
+        uint startFlag=0;
+        if(comparedResult==0)
+            for(uint i=0;i<nearbyNodes.length;i++)
+                if(nearbyNodes[i]!=objectId&&nodes[nearbyNodes[i]].PreDecided()){
+                    comparedResult=nodes[nearbyNodes[i]].getCurrentsPath()+getDirectPath(idToJudge,nearbyNodes[i]);
+                    startFlag=i+1;
+                    break;
+                }
+        for(uint j=startFlag;j<nearbyNodes.length;j++){
+            if(nearbyNodes[j]!=objectId){
+                uint tmp=nodes[nearbyNodes[j]].getCurrentsPath()+getDirectPath(idToJudge,nearbyNodes[j]);
+                if(nodes[nearbyNodes[j]].PreDecided()&&tmp<comparedResult)
+                    comparedResult=tmp;
             }
-        }
-        for(uint j=flag;j<nearbyNodes.length;j++){
-            uint tmp=nodes[nearbyNodes[j]].getCurrentsPath(objectId)+nodes[idToJudge].getCurrentsPath(nearbyNodes[j]);
-            if(nodes[nearbyNodes[j]].PreDecided(objectId)&&tmp<comparedResult)
-                comparedResult=tmp;
         }
         return comparedResult;
     }
     function initOtherNode(uint objectId) internal{
         for(uint i=0;i<nodes.length;i++)
-            if(i!=objectId&&!nodes[objectId].isNearby(i))
-                nodes[i].setCurrentsPath(i,0);
-
+            if(i!=objectId){
+                if (!nodes[objectId].isNearby(i))
+                    nodes[i].setCurrentsPath(0);
+                else nodes[i].setCurrentsPath(getDirectPath(i,objectId));
+            }
     }
     function initNode(uint nodeNum) internal{
         nodes.length=nodeNum;
@@ -71,8 +77,8 @@ contract global {
 
     function initNearby() internal{
         for (uint i = 0; i < lines.length; i++) {
-            nodes[lines[i].getFirst()].addNearby(lines[i].getSecond(), lines[i].getCharge());
-            nodes[lines[i].getSecond()].addNearby(lines[i].getFirst(), lines[i].getCharge());
+            nodes[lines[i].getFirst()].addNearby(lines[i].getSecond());
+            nodes[lines[i].getSecond()].addNearby(lines[i].getFirst());
         }
     }
 
@@ -80,12 +86,15 @@ contract global {
         for (uint i = 0; i < lines.length; i++)
             if (lines[i].equals(fromId, toId))
                 return lines[i].getCharge();
+        return 0;
     }
 
     function changeLineCharge(uint first, uint second, uint newCharge) public {
         for (uint i = 0; i < lines.length; i++)
-            if (lines[i].equals(first, second))
+            if (lines[i].equals(first, second)) {
                 lines[i].setCharge(newCharge);
+                break;
+            }
         initNode(nodes.length);
         initNearby();
     }

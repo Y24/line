@@ -5,7 +5,7 @@ contract line {
     uint secondId;
     uint charge;
 
-    constructor (uint first, uint second, uint c) public{
+    constructor (uint first, uint second, uint c) public payable{
         firstId = first;
         secondId = second;
         charge = c;
